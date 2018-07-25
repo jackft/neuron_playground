@@ -1,8 +1,8 @@
+# Neuron Playground
 ![example](http://jackterwilliger.com/wp-content/uploads/2018/07/hh.gif)
-# neuron_playground
-The code I used in an interactive explaination about modeling biological neurons: http://jackterwilliger.com/biological-neural-networks-part-i-spiking-neurons/
 
-In the blog post, you can play around with these dynamical systems we call neurons:
+## What is this?
+
+This is the code I used to build an [interactive explaination](http://jackterwilliger.com/biological-neural-networks-part-i-spiking-neurons/) about modeling biological neurons. That post coveres a brief intro to dynamical systems theory as well as to the basic physiology of an action potential.
+
 ![The tool](http://jackterwilliger.com/wp-content/uploads/2018/07/Screenshot-from-2018-07-24-21-16-31.png)
-
-This is only part I. of III. so stay tuned!
