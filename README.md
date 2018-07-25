@@ -1,4 +1,4 @@
-![example](http://jackterwilliger.com/wp-content/uploads/2018/07/hhneuron.gif)
+![example](http://jackterwilliger.com/wp-content/uploads/2018/07/hhneuron.gif?v2)
 # neuron_playground
 The code I used in an interactive explaination about modeling biological neurons: http://jackterwilliger.com/biological-neural-networks-part-i-spiking-neurons/
 
