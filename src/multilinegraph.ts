@@ -4,16 +4,16 @@ import * as d3 from 'd3';
 /*
  * This graph plots a simple line graph
  */
-export class LineGraph {
+export class MultiLineGraph {
 
     public svg: d3.Selection<any, any, any, any>;
     public width: number;
     public height: number;
     public margin: Margin = {left: 45, right: 25, top: 20, bottom: 35};
 
-    public color: string;
+    public colors: string[];
 
-    public path: d3.Selection<any,any, any, any>;
+    public paths: d3.Selection<any,any, any, any>[];
     public extra: d3.Selection<any,any, any, any>;
     
     public leftAxis: any;
@@ -23,16 +23,17 @@ export class LineGraph {
     public yScale: d3.ScaleLinear<number, number>;
 
     constructor(svg: d3.Selection<any, any, any, any>,
+                numLines: number,
                 xDomain: [number, number],
                 yDomain: [number, number],
                 xLabel: string,
                 yLabel: string,
                 title: string,
-                color: string) {
+                colors: string[]) {
 
         this.svg = svg;
 
-        this.color = color;
+        this.colors = colors;
                        
         //set dimensions
         let totalWidth: number = +svg.attr("width");
@@ -41,13 +42,17 @@ export class LineGraph {
         this.height = totalHeight - this.margin.top - this.margin.bottom;
 
         //add path
-        this.path = this.svg.append("g")
-                        .attr("width", this.width)
-                        .attr("height", this.height)
-                        .attr("transform",
-                                `translate(${this.margin.left}, ${this.margin.top})`)
-                        .append("path")
-                        .attr("class", "line");
+        this.paths = [];
+        for (let i = 0; i < numLines; i++) {
+            this.paths.push(this.svg.append("g")
+                            .attr("width", this.width)
+                            .attr("height", this.height)
+                            .attr("transform",
+                                    `translate(${this.margin.left}, ${this.margin.top})`)
+                            .append("path")
+                            .attr("class", "line"));
+        }
+
 
         //scales
         this.xScale = d3.scaleLinear()
@@ -112,34 +117,38 @@ export class LineGraph {
         .text(title); 
     }
 
-    public update(data: {x: number, y: number}[]) {
+    public update(data: {x: number, ys: number[]}[]) {
         //this.updateScales(data);
         let [minX, maxX] = this.xScale.domain();
         let [minY, maxY] = this.yScale.domain();
-        let getLine = () => {
-            return d3.line<{x: number, y: number}>()
+        let getLine = (i) => {
+            return d3.line<{x: number, ys: number[]}>()
                     .defined(d => d.x <= maxX && d.x >= minX &&
-                             d.y <= maxY && d.y >= minY)
+                             d.ys[i] <= maxY && d.ys[i] >= minY)
                     .x(d => this.xScale(d.x))
-                    .y(d => this.yScale(Math.min(d.y, maxY)))
+                    .y(d => this.yScale(Math.min(d.ys[i], maxY)))
         };
-        this.path
-            .datum(data)
-            .attr("d", getLine())
-            .attr("stoke-width", "2")
-            .attr("stroke", this.color)
-            .attr("fill", "none")
-            .attr("class", "line regular-line");
+        for (let i=0; i<this.paths.length; i++) {
+            this.paths[i]
+                .datum(data)
+                .attr("d", getLine(i))
+                .attr("stoke-width", "2")
+                .attr("stroke", this.colors[i])
+                .attr("fill", "none")
+                .attr("class", "line multi-line")
+                .attr("stroke-opacity", "0.5");
+        }
+        
     }
 
-    public updateScales(data: {x: number, y: number}[]) {
+    public updateScales(data: {x: number, ys: number[]}[]) {
         let minX: number,
             maxX: number,
             minY: number,
             maxY: number;
         minX = data[0].x;
         maxX = data[data.length-1].x;
-        let ys = data.map((x) => x.y);
+        let ys = [].concat.apply([], data.map((pnt) => pnt.ys));
         minY = Math.min(...ys);
         maxY = Math.max(...ys);
         this.xScale.domain([minX, maxX]);

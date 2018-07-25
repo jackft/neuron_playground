@@ -4,7 +4,7 @@ import * as d3 from 'd3';
 /*
  * This graph plots a simple line graph
  */
-export class LineGraph {
+export class Histogram {
 
     public svg: d3.Selection<any, any, any, any>;
     public width: number;
@@ -13,8 +13,7 @@ export class LineGraph {
 
     public color: string;
 
-    public path: d3.Selection<any,any, any, any>;
-    public extra: d3.Selection<any,any, any, any>;
+    public hist: d3.Selection<any,any, any, any>;
     
     public leftAxis: any;
     public bottomAxis: any;
@@ -40,22 +39,20 @@ export class LineGraph {
         this.width = totalWidth - this.margin.left - this.margin.right;
         this.height = totalHeight - this.margin.top - this.margin.bottom;
 
-        //add path
-        this.path = this.svg.append("g")
+        this.hist = this.svg.append("g")
                         .attr("width", this.width)
                         .attr("height", this.height)
                         .attr("transform",
                                 `translate(${this.margin.left}, ${this.margin.top})`)
-                        .append("path")
-                        .attr("class", "line");
 
         //scales
         this.xScale = d3.scaleLinear()
                         .domain(xDomain)
-                        .range([0, this.width]);
+                        .rangeRound([0, this.width]);
         this.yScale = d3.scaleLinear()
                         .domain(yDomain)
                         .range([this.height, 0]);
+
         //axes        
         let laxis = d3.axisLeft(this.yScale);
         this.leftAxis = this.svg.append("g")
@@ -81,7 +78,7 @@ export class LineGraph {
 
         // extra group for other uses
        
-        this.extra = this.svg.append("g")
+        this.svg.append("g")
                 .attr("class", "extra")
                 .attr("width", this.width)
                 .attr("height", this.height)
@@ -112,44 +109,27 @@ export class LineGraph {
         .text(title); 
     }
 
-    public update(data: {x: number, y: number}[]) {
-        //this.updateScales(data);
+    public update(data: number[]) {
+        let N = data.length;
         let [minX, maxX] = this.xScale.domain();
-        let [minY, maxY] = this.yScale.domain();
-        let getLine = () => {
-            return d3.line<{x: number, y: number}>()
-                    .defined(d => d.x <= maxX && d.x >= minX &&
-                             d.y <= maxY && d.y >= minY)
-                    .x(d => this.xScale(d.x))
-                    .y(d => this.yScale(Math.min(d.y, maxY)))
-        };
-        this.path
-            .datum(data)
-            .attr("d", getLine())
-            .attr("stoke-width", "2")
-            .attr("stroke", this.color)
-            .attr("fill", "none")
-            .attr("class", "line regular-line");
+        var bins = d3.histogram()
+                     .domain([minX, maxX])
+                     .thresholds(this.xScale.ticks(50))
+                     (data);
+        this.yScale = d3.scaleLinear()
+                  .domain([0, d3.max(bins, function(d) { return d.length/N; })])
+                  .range([this.height, 0]);
+        let formatCount = d3.format(",.0f");
+        this.hist.selectAll("*").remove();
+        var bar = this.hist.selectAll(".bar")
+          .data(bins)
+          .enter().append("g")
+            .attr("class", "bar")
+            .attr("transform", d => "translate(" + this.xScale(d.x0) + "," + this.yScale(d.length/N) + ")");
+        bar.append("rect")
+            .attr("x", 1)
+            .attr("width", this.xScale(bins[0].x1) - this.xScale(bins[0].x0) - 1)
+            .attr("height", d => this.height - this.yScale(d.length/N))
+            .attr("fill", this.color);
     }
-
-    public updateScales(data: {x: number, y: number}[]) {
-        let minX: number,
-            maxX: number,
-            minY: number,
-            maxY: number;
-        minX = data[0].x;
-        maxX = data[data.length-1].x;
-        let ys = data.map((x) => x.y);
-        minY = Math.min(...ys);
-        maxY = Math.max(...ys);
-        this.xScale.domain([minX, maxX]);
-        this.yScale.domain([minY, maxY]);
-
-        let laxis = d3.axisLeft(this.yScale);
-        let baxis = d3.axisBottom(this.xScale);
-        this.leftAxis.call(laxis);
-        this.bottomAxis.call(baxis);
-    }
-
-
 }

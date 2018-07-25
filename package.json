@@ -1,15 +1,27 @@
 {
-  "name": "neuron_playground",
+  "name": "neurons",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/neuron_playground.js",
+  "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "browserify": "^14.5.0",
     "gulp": "^3.9.1",
-    "gulp-typescript": "^3.1.6"
+    "gulp-typescript": "^3.2.3",
+    "tsify": "^3.0.3",
+    "typescript": "^2.6.1",
+    "vinyl-source-stream": "^1.1.0"
+  },
+  "dependencies": {
+    "@types/mathjax": "0.0.32",
+    "d3": "^5.0.0",
+    "d3-legend": "^1.0.0",
+    "ml-matrix": "^5.0.1",
+    "numeric": "^1.2.6",
+    "typed-web-workers": "^2.1.1"
   }
 }
